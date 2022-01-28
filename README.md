@@ -1,5 +1,5 @@
-# summersalt_assessment
-technical assessment for SummerSalt
+# Technical Assessment
+technical assessment for company
 
 
 
