@@ -12,3 +12,6 @@ CREATE TABLE IF NOT EXISTS summersalt.state_data(
     total_wage_estimate_engineer NUMERIC NOT NULL,
     percentage_wage_engineer TEXT
 );
+
+CREATE UNIQUE INDEX uq_state_data
+  ON summersalt.state_data(state, year);

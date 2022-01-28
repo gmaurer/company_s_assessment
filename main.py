@@ -99,7 +99,7 @@ def main():
 
     cur.executemany("INSERT into summersalt.state_data (state,year,total_grads,total_grads_engineer,percentage_grads_engineer,total_wage_estimate,total_wage_estimate_engineer,percentage_wage_engineer) VALUES (%s,%s,%s,%s,%s, %s,%s,%s)",listthin)
     conn.commit()
-    cur.close()
+    conn.close()
 
 
 def connect_db():
