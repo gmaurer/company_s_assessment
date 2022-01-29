@@ -18,4 +18,7 @@ Improvements with more time:
 2) shift the datastructure to pandas or a similar data frame to to append data in one loop.
 3) sort requests to improve time complexity by removing loops of data
 4) db ini file to streamline standing this up locally
+5) trim down functions that manipulate the returns.  This could probably be handled by 1 function by passing in args for each column name/ list position.
+6) retry functionality on queries in case of failure
+7) more error handling and logging 
 
