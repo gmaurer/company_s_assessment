@@ -14,7 +14,8 @@ Steps to run on Mac OSX
 
 
 Improvements with more time: 
-1) dockerize contains to build sql and python container automatically, this would improve set up as it is contained.  
+1) dockerize container to build sql and python container automatically, this would improve set up as it is contained.  
 2) shift the datastructure to pandas or a similar data frame to to append data in one loop.
 3) sort requests to improve time complexity by removing loops of data
+4) db ini file to streamline standing this up locally
 

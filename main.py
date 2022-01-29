@@ -80,15 +80,18 @@ def main():
 
     total_grads_json = requests.get('https://datausa.io/api/data?measures=Completions&drilldowns=PUMA,University')
     total_grads_engineers_json = requests.get('https://datausa.io/api/data?CIP=14&drilldowns=PUMA&measure=Completions')
-    #pprint.pprint(total_grads_json.json()['data'][0])
-    #pprint.pprint(total_grads_engineers_json.json()['data'][0])
+    total_grads_wages_json = requests.get('https://datausa.io/api/data?measure=ygcpop%20RCA,Total%20Population,Total%20Population%20MOE%20Appx,Average%20Wage,Average%20Wage%20Appx%20MOE,Record%20Count&drilldowns=PUMA&Record%20Count%3E=5')
+    total_grads_wages_engineers_json = requests.get('https://datausa.io/api/data?CIP2=14&measure=ygcpop%20RCA,Total%20Population,Total%20Population%20MOE%20Appx,Average%20Wage,Average%20Wage%20Appx%20MOE,Record%20Count&drilldowns=PUMA&Record%20Count%3E=5&Workforce%20Status=true')
 
     if total_grads_json.status_code == 200 and total_grads_engineers_json.status_code == 200:
         extract_graduations(total_grads_json.json()['data'])
         extract_graduations_engineers(total_grads_engineers_json.json()['data'])
 
-        find_percentages()
+    if total_grads_wages_json.status_code == 200 and total_grads_wages_engineers_json.status_code == 200:
+        extract_graduations_wages(total_grads_wages_json.json()['data'])
+        extract_graduations_wages_engineers(total_grads_wages_engineers_json.json()['data'])
 
+    find_percentages(7,6,5)
     cur, conn = connect_db()
     
 
@@ -127,7 +130,7 @@ def extract_graduations(json_obj):
             if str(record["Year"] + record["PUMA"][-2:]).lower() in per_state_year:
                 per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][2] = per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][2] + record["Completions"]
             else:
-                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], record["Completions"], 0, "", 0.0, 0.0, "test"]
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], record["Completions"], 0, "", 0.0, 0.0, ""]
         elif record["PUMA"] == "#null":
             pass
             #no state was provided
@@ -136,20 +139,56 @@ def extract_graduations(json_obj):
 
 def extract_graduations_engineers(json_obj):
     for record in json_obj:
+        #print(record["PUMA"][-2:].upper() in state_level_data)
+        #print(type(record["PUMA"][-2:].upper()))
         if record["PUMA"][-2:].upper() in state_level_data:
             if str(record["Year"] + record["PUMA"][-2:]).lower() in per_state_year:
                 per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][3] = per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][3] + record["Completions"]
             else:
-                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], 0, record["Completions"], "", 0.0, 0.0, "tests"]
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], 0, record["Completions"], "", 0.0, 0.0, ""]
         elif record["PUMA"] == "#null":
             pass
             #no state was provided
         else:
             print("State not Valid")
 
-def find_percentages():
+def extract_graduations_wages(json_obj):
+    for record in json_obj:
+        if "79500US" in record["PUMA"]: #with more time this can be cleaned up.
+            record["PUMA"] = record["PUMA"][:-17]
+        if record["PUMA"][-2:].upper() in state_level_data:
+            if str(record["Year"] + record["PUMA"][-2:]).lower() in per_state_year:
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][5] = per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][5] + record["Average Wage"]
+            else:
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], 0, 0, "", record["Average Wage"], 0.0, ""]
+        elif record["PUMA"] == "#null":
+            pass
+            #no state was provided
+        else:
+            print("State not Valid: wage")
+
+def extract_graduations_wages_engineers(json_obj):
+    for record in json_obj:
+        if "79500US" in record["PUMA"]: #with more time this can be cleaned up.
+            record["PUMA"] = record["PUMA"][:-17]
+        if record["PUMA"][-2:].upper() in state_level_data:
+            if str(record["Year"] + record["PUMA"][-2:]).lower() in per_state_year:
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][6] = per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()][6] + record["Average Wage"]
+            else:
+                per_state_year[str(record["Year"] + record["PUMA"][-2:]).lower()] = [record["PUMA"][-2:], record["Year"], 0, 0, "", 0.0, record["Average Wage"], ""]
+        elif record["PUMA"] == "#null":
+            pass
+            #no state was provided
+        else:
+            print("State not Valid: wage E")
+
+def find_percentages(result, numerator, denomiator):
     for value in per_state_year.values():
         value[4] = str(round((value[3] / value[2]), 3) * 100)
+        if value[6] != 0.0:
+            value[7] = str((value[6] / value[5]) * 100)
+        else:
+            value[7] == "0"
 
 
 main()
