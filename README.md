@@ -21,4 +21,5 @@ Improvements with more time:
 5) trim down functions that manipulate the returns.  This could probably be handled by 1 function by passing in args for each column name/ list position.
 6) retry functionality on queries in case of failure
 7) more error handling and logging 
+8) swap to mysql as this data is not geospatial in nature, I defaulted to Postgresql since it is what I am the most familar with/ could be stood up quickest. 
 
