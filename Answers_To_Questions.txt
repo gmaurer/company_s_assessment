@@ -1,0 +1,31 @@
+For the following questions feel free to write code if needed, but simple explanations would also work if that is quicker.
+● How would you determine on what frequency to update the data? After determining the appropriate updating frequency (i.e. hourly, daily, monthly, etc), how would you automate the process to keep the data up to date?
+
+Answer:
+Automating the data insertion: Writing a Kafka Producer and Consumer, the Producer to scrape the json file for updates and producer a kafka message and the Consumer to listen to the topic and reach out to retrieve said message.
+Another option since the dataset is small (this would be a less complex solution) would be to determine the customer for this data and how close to real time they need the data.  Then write a cronjob that would pull the json file and call a function to perform a upsert on the database
+Frequency to update the data is dependent on the customer as a cronjob can be set to trigger the update on any time basis
+
+● Assume that past graduation data can be updated for up to two years. Write a SQL query (or series of queries) to keep our dataset in sync with the most recent information.
+
+Answer:
+This question seems to assume we have access to a SQL table with the most recent updates to the graduation data.  I would shift this from a SQL query to utilize a Kafka topic to emit messages upon updates to the graduation data.  Then a simple consumer to consume the message and update the database with the most recent data.
+
+● Using SQL, how can we prevent duplicate data? How can we test to make sure our unique identifier is still unique?
+
+Answer:
+As shown in my coding example you can set an index to make the records unique.  Since there can only be on example of a combination of year and state the index can be as follows:
+```CREATE UNIQUE INDEX uq_state_data
+  ON summersalt.state_data(state, year);```
+This will prevent duplicate data upon insert which will negate the need to check if the data is unique unless a data load operation was performed before the index was in place.  In that case we could run a query like this to find duplicates and then write a Python function to compare and remove them.
+```SELECT state, year, COUNT(*)
+FROM summersalt.state_data
+GROUP BY state, year
+HAVING COUNT(*) > 1```
+
+● Give a brief explanation on how you would make this new aggregated data available for an external client to consume–on either a push or pull basis. Let’s assume the data is too large to pass via email/csvs.
+
+I would utilize/ build a API using psycopg2 and Flask to put together GET, POST, and PUT endpoints to retrieve the data they need, 
+GET: this can be configured to either return all the data, or a subselect based on the columns the client needs to query on.
+POST: This would allow the client to insert new data if needed.  We would write a contract for how the data would be formatted to them and from them for consistency. 
+PUT: This would allow the client to update existing data if needed.  Also would need a contract to agree on the format of the data. 
